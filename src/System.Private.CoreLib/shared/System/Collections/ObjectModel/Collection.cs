@@ -142,6 +142,71 @@ namespace System.Collections.ObjectModel
             RemoveItem(index);
         }
 
+        public void AddRange(IEnumerable<T> collection)
+        {
+            InsertRange(Count, collection);
+        }
+
+        public void InsertRange(int index, IEnumerable<T> collection)
+        {
+            if (collection == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.collection);
+            }
+
+            if (index > Count)
+            {
+                ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+            }
+
+            InsertItemsRange(index, collection);
+        }
+
+        public void RemoveRange(int index, int count)
+        {
+            if (index < 0)
+            {
+                ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+            }
+            else if (index > Count)
+            {
+                ThrowHelper.ThrowArgumentOutOfRange_IndexException();
+            }
+
+            if (count < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+            }
+
+            if (items.Count - index < count)
+                ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+
+            RemoveItemsRange(index, count);
+        }
+
+        public void ReplaceRange(int index, int count, IEnumerable<T> collection)
+        {
+            if (index < 0)
+            {
+                ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+            }
+
+            if (count < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+            }
+
+            if (items.Count - index < count)
+                ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
+
+            if (collection == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.collection);
+            }
+
+            ReplaceItemsRange(index, count, collection);
+        }
+
         protected virtual void ClearItems()
         {
             items.Clear();
@@ -160,6 +225,40 @@ namespace System.Collections.ObjectModel
         protected virtual void SetItem(int index, T item)
         {
             items[index] = item;
+        }
+
+        protected virtual void InsertItemsRange(int index, IEnumerable<T> collection)
+        {
+            if (items is List<T> list)
+            {
+                list.InsertRange(index, collection);
+                return;
+            }
+
+            foreach (T item in collection)
+            {
+                items.Insert(index++, item);
+            }
+        }
+
+        protected virtual void RemoveItemsRange(int index, int count)
+        {
+            if (items is List<T> list)
+            {
+                list.RemoveRange(index, count);
+                return;
+            }
+
+            for (int i = index; i < index + count; i++)
+            {
+                items.RemoveAt(i);
+            }
+        }
+
+        protected virtual void ReplaceItemsRange(int index, int count, IEnumerable<T> collection)
+        {
+            RemoveItemsRange(index, count);
+            InsertItemsRange(index, collection);
         }
 
         bool ICollection<T>.IsReadOnly
